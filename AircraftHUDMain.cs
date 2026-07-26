@@ -90,6 +90,13 @@ namespace AircraftHUD
         private float2 mainClipMin;
         private float2 mainClipMax;
 
+        // ADJUSTABLE SCALE
+
+        static float textPos_scale = 0.85f;
+
+        static float pitchLadderLenX1_scale = 0.3f;
+        static float pitchLadderLenX2_scale = 0.2f;
+
         // TEXT
         private bool fontLoaded = false;
         private ImFontPtr hudFont;
@@ -707,16 +714,17 @@ namespace AircraftHUD
 
             DegToPx = localCenter.Y * 0.05f;
 
-            float clipSize = localCenter.Y * 0.7f;
-            mainClipMin = new float2(center.X - clipSize, center.Y - clipSize);
-            mainClipMax = new float2(center.X + clipSize, center.Y + clipSize);
-
             // TEXT
-            textPosX = localCenter.Y * 0.85f;
+            textPosX = localCenter.Y * textPos_scale;
             textPosX2 = textPosX * 1.07f;
             textPosX3 = textPosX * 1.25f;
             textBoxSizeX = localCenter.Y * 0.17f;
             textBoxSizeY = localCenter.Y * 0.08f;
+
+            // CLIP SIZE
+            float2 clipSize = new float2(localCenter.Y * (textPos_scale - 0.15f), localCenter.Y * 0.7f);
+            mainClipMin = new float2(center.X - clipSize.X, center.Y - clipSize.Y);
+            mainClipMax = new float2(center.X + clipSize.X, center.Y + clipSize.Y);
 
             // FLIGHT VECTOR
             flightVecRadius1 = localCenter.Y * 0.025f;
@@ -740,10 +748,10 @@ namespace AircraftHUD
             velocityScaleUnitsToPx = localCenter.Y * 0.02f;
 
             // PITCH LADDER
-            pitchLadderLenX1 = localCenter.Y * 0.3f;
-            pitchLadderLenX2 = localCenter.Y * 0.5f;
-            pitchLadderLenX3 = localCenter.Y * 0.55f;
-            pitchLadderLenY1 = localCenter.Y * 0.02f;
+            pitchLadderLenX1 = localCenter.Y * pitchLadderLenX1_scale;
+            pitchLadderLenX2 = localCenter.Y * (pitchLadderLenX1_scale + pitchLadderLenX2_scale);
+            pitchLadderLenX3 = localCenter.Y * (pitchLadderLenX1_scale + pitchLadderLenX2_scale + 0.05f);
+            pitchLadderLenY1 = localCenter.Y * pitchLadderLenX2_scale * 0.1f;
 
             // HEADING SCALE
             headingScalePosY = localCenter.Y - (localCenter.Y * 0.8f);
@@ -878,6 +886,42 @@ namespace AircraftHUD
                     line_thickness = Math.Max((float)Math.Round(2f * HUD.lineScale * verticalScale), 1f);
                     shadowOffset = new float2(0f, line_thickness);
                 }
+
+                ImGui.Text("HUD Scale");
+
+                // PITCH LADDER
+                //pitchLadderLenX1 = localCenter.Y * 0.3f;
+                //pitchLadderLenX2 = localCenter.Y * 0.5f;
+                //pitchLadderLenX3 = localCenter.Y * 0.55f;
+
+                if (ImGui.SliderFloat("Width", ref HUD.textPos_scale, 0.5f, 2.0f))
+                {
+                    textPosX = localCenter.Y * HUD.textPos_scale;
+                    textPosX2 = textPosX * 1.07f;
+                    textPosX3 = textPosX * 1.25f;
+                    textBoxSizeX = localCenter.Y * 0.17f;
+                    textBoxSizeY = localCenter.Y * 0.08f;
+
+                    float2 clipSize = new float2(localCenter.Y * (textPos_scale - 0.15f), localCenter.Y * 0.7f);
+                    mainClipMin = new float2(center.X - clipSize.X, center.Y - clipSize.Y);
+                    mainClipMax = new float2(center.X + clipSize.X, center.Y + clipSize.Y);
+                }
+
+                if (ImGui.SliderFloat("Pitch Ladder W1", ref HUD.pitchLadderLenX1_scale, 0.2f, 0.7f))
+                {
+                    pitchLadderLenX1 = localCenter.Y * HUD.pitchLadderLenX1_scale;
+                    pitchLadderLenX2 = localCenter.Y * (HUD.pitchLadderLenX1_scale + HUD.pitchLadderLenX2_scale);
+                    pitchLadderLenX3 = localCenter.Y * (HUD.pitchLadderLenX1_scale + HUD.pitchLadderLenX2_scale + 0.05f);
+                }
+
+                if (ImGui.SliderFloat("Pitch Ladder W2", ref HUD.pitchLadderLenX2_scale, 0.05f, 0.5f))
+                {
+                    pitchLadderLenX2 = localCenter.Y * (HUD.pitchLadderLenX1_scale + HUD.pitchLadderLenX2_scale);
+                    pitchLadderLenX3 = localCenter.Y * (HUD.pitchLadderLenX1_scale + HUD.pitchLadderLenX2_scale + 0.05f);
+                    pitchLadderLenY1 = localCenter.Y * HUD.pitchLadderLenX2_scale * 0.1f;
+                }
+
+                ImGui.Dummy(new float2(20.0f, 8.0f));
 
                 if (ImGui.Button("Save HUD Settings"))
                 {
